@@ -1,0 +1,4 @@
+Django==2.2
+django-suit==0.2.26
+pytz==2019.1
+sqlparse==0.3.0
