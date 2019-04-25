@@ -80,3 +80,42 @@ class NewsBarView(BlogerLoginRequiredMixin, AjaxResponseView):
             context["status"] = 200
         return context
 
+
+class Subscribe(BlogerLoginRequiredMixin, AjaxResponseView):
+
+    def get_data(self, request, *args, **kwargs):
+        pk = request.POST.get("id", False)
+        subscribe = int(request.POST.get("subscribe", False))
+        print(subscribe)
+        user = self.get_user()
+        if pk:
+            try:
+                blog = Blog.objects.get(pk=pk)
+            except Exception as exc:
+                print("Can't get blog by id")
+                return {"status": 400, "message": "No such blog"}
+            else:
+                if subscribe:
+                    print("in if")
+                    blog.subscribers.add(user)
+                else:
+                    print("in else")
+                    blog.subscribers.remove(user)
+                blog.save()
+                print(blog.subscribers.all())
+                return {"status": 200, "message": "Changed subscribtion"}
+        print("Can't get blog by id")
+        return {"status": 400, "message": "No such blog"}
+
+
+class BlogsList(BlogerLoginRequiredMixin, AjaxResponseView):
+
+    def get_data(self, request, *args, **kwargs):
+        user = self.get_user()
+        unsub = Blog.objects.exclude(subscribers__in=[user])
+        sub_in= Blog.objects.filter(subscribers__in=[user])
+        return {'status': 200,
+            "blogs_in": [q.as_json() for q in sub_in],
+            "blogs_out": [q.as_json() for q in unsub]
+            }
+

@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 from test_blog.settings import EMAIL_HOST_USER
 
@@ -25,6 +26,18 @@ class Blog(models.Model):
                 context[key] = value
         context["owner"] = self.make_owner_as_json() 
         return context
+
+    def save(self):
+        try:
+            b = Blog.objects.get(owner=self.owner)
+        except Exception as e:
+            super().save()
+        else:
+            if b.id == self.id:
+                super().save()
+            else:
+                print("Can't create new project, you get one")
+                raise ValidationError("Can't create new project, you get one")
 
 
 class Post(models.Model):

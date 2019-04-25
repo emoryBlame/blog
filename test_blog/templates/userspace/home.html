@@ -14,6 +14,7 @@
             {% endfor %}
         </div>
         <div class="col-md-5">
+            <h3>News:</h3>
             <table class="table">
                 <tr>
                     <th>Bloger</th>
@@ -22,6 +23,18 @@
                     <th>Mark as readed</th>
                 </tr>
                 <tbody id="table_body">
+                    
+                </tbody>
+            </table>
+            <br>
+            <br>
+            <h3>Blogers:</h3>
+            <table class="table">
+                <tr>
+                    <th>Bloger</th>
+                    <th>Subscribe</th>
+                </tr>
+                <tbody id="table_body_blogers">
                     
                 </tbody>
             </table>
@@ -69,8 +82,8 @@
                     make_a_table(data["news"]);
                 } else {
                     console.log("Something goes wrong, while news was loaded, there are data: ", data);
-                    //alert("Create the news first!")
                     make_a_table();
+                    //alert("Create the news first!")
                 }
             },
             errors: function(err) {
@@ -94,12 +107,76 @@
                     make_a_table(data["news"]);
                 } else {
                     console.log("Something goes wrong, while marking the news, there are data: ", data);
+                    make_a_table();
                 }
             },
             errors: function(err) {
                 console.log("Something goes wrong, while marking the news, there are errors: ", err);
             }  
         });
+    }
+
+    function blogs_list() {
+        var url = "{% url 'blogs-list' %}";
+        $.ajax({
+            url: url,
+            dataType: "json",
+            type: "POST",
+            data: {
+            },
+            success: function(data){
+                if (data["status"] == 200) {
+                    console.log("Success:", data);
+                    make_a_bloger_list_table(data["blogs_in"]);
+                    make_a_bloger_list_table(data["blogs_out"], 1);
+                } else {
+                    console.log("Something goes wrong, while marking the news, there are data: ", data);
+                    make_a_bloger_list_table();
+                }
+            },
+            errors: function(err) {
+                console.log("Something goes wrong, while marking the news, there are errors: ", err);
+            }  
+        });
+    }
+
+    function subscribe(id, subscribe) {
+        var url = "{% url 'subscribe' %}";
+        $.ajax({
+            url: url,
+            dataType: "json",
+            type: "POST",
+            data: {
+                "id": id,
+                "subscribe": subscribe
+            },
+            success: function(data){
+                if (data["status"] == 200) {
+                    console.log("Success:", data);
+                    load_news();
+                    blogs_list();
+                } else {
+                    console.log("Something goes wrong, while marking the news, there are data: ", data);
+                }
+            },
+            errors: function(err) {
+                console.log("Something goes wrong, while marking the news, there are errors: ", err);
+            }  
+        });
+    }
+
+    function make_a_bloger_list_table(data, update=false) {
+        var tbody = document.getElementById("table_body_blogers");
+        if (!update) {
+            tbody.innerHTML = ``;
+        }
+        for (var blog in data) {
+            tr = `
+                <td>${data[blog].owner.first_name}</td>
+                <td><input type="button" value="${update ? "Subscribe" : "Unsubscribe"} " onclick="subscribe(${data[blog].id}, ${update ? 1: 0})" /></td>
+            `;
+            tbody.innerHTML += tr; 
+        }
     }
 
     function make_a_table(data) {
@@ -118,6 +195,7 @@
 
     window.onload = function() {
         load_news();
+        blogs_list();
     }
 
 </script>
