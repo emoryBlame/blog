@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br>
+<h1>{{request.user.first_name}} posts:</h1>
+    <div class="container">
+       <div class="row">
+        <div class="col-md-5">
+            {% for p in posts %}
+                <br>
+                <h2>{{p.title}}</h2>
+                <p>{{p.text}}<p>
+                <p>{{p.date}}<p>
+            {% endfor %}
+        </div>
+        <div class="col-md-5">
+            <table class="table">
+                <tr>
+                    <th>Bloger</th>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Mark as readed</th>
+                </tr>
+                <tbody id="table_body">
+                    
+                </tbody>
+            </table>
+        </div> 
+       </div> 
+    </div>
+
+
+<script type="text/javascript">
+
+    $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                function getCookie(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    // Only send the token to relative URLs i.e. locally.
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            }
+        });
+
+    function load_news() {
+        var url = "{% url 'news-bar' %}";
+        $.ajax({
+            url: url,
+            dataType: "json",
+            type: "POST",
+            data: {},
+            success: function(data){
+                if (data["status"] == 200) {
+                    console.log("Success:", data);
+                    make_a_table(data["news"]);
+                } else {
+                    console.log("Something goes wrong, while news was loaded, there are data: ", data);
+                    //alert("Create the news first!")
+                    make_a_table();
+                }
+            },
+            errors: function(err) {
+                console.log("Something goes wrong, while news was loaded, there are errors: ", err);
+            }  
+        });
+    }
+
+    function mark_a_news(id) {
+        var url = "{% url 'news-bar' %}";
+        $.ajax({
+            url: url,
+            dataType: "json",
+            type: "POST",
+            data: {
+                "id": id,
+            },
+            success: function(data){
+                if (data["status"] == 200) {
+                    console.log("Success:", data);
+                    make_a_table(data["news"]);
+                } else {
+                    console.log("Something goes wrong, while marking the news, there are data: ", data);
+                }
+            },
+            errors: function(err) {
+                console.log("Something goes wrong, while marking the news, there are errors: ", err);
+            }  
+        });
+    }
+
+    function make_a_table(data) {
+        var tbody = document.getElementById("table_body");
+        tbody.innerHTML = ``;
+        for (var news in data) {
+            tr = `
+                <td>${data[news].post.blog.owner.first_name}</td>
+                <td>${data[news].post.title}</td>
+                <td>${data[news].post.date}</td>
+                <td><input type="button" value="Mark" onclick="mark_a_news(${data[news].id})" /></td>
+                `;
+            tbody.innerHTML += tr; 
+        }
+    }
+
+    window.onload = function() {
+        load_news();
+    }
+
+</script>
+{% endblock %}

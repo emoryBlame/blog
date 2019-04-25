@@ -27,7 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,6 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'userspace', 
+    'suit',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +58,7 @@ ROOT_URLCONF = 'test_blog.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join('templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,3 +122,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = "vladyslav.stetsko@gmail.com"
+EMAIL_HOST_PASSWORD = "awesome8"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Should be called on each 403 CSRF error.
+CSRF_FAILURE_VIEW = "userspace.views.csrf_failure"
+# Apparently, default does not work correctly.
+LOGIN_REDIRECT_URL = "/home"
